@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import keras
 import random
 import numpy as np
+import seaborn as sns
 import pandas as pd
 from sklearn.datasets import load_files
 from keras import backend as K
@@ -148,6 +149,16 @@ def accuracy_loss_plots(history):
     plt.savefig('food11_cnn_loss.pdf')
 
 
+def plot_confusion_matrix(confusion_matrix, target_names):
+    # when we pass a confusion matrix and the target names it produces a plot of the confusion matrix
+
+    df_cm = pd.DataFrame(confusion_matrix, index=target_names, columns=target_names)
+    print(df_cm)
+    plt.figure(figsize=(10, 7))
+    sns.heatmap(df_cm, annot=True, fmt='g')
+    plt.savefig("confusion_matrix_plot.png")
+
+
 def prediction_results(model, x_test, y_test):
     # compute probabilities
     pred_y = model.predict(x_test)
@@ -155,7 +166,7 @@ def prediction_results(model, x_test, y_test):
     y_pred = np.argmax(pred_y, axis=1)
     # plot statistics
     print('Analysis of results')
-    target_names = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+    target_names = ['Bread', 'Dairy_product', 'Dessert', 'Egg', 'Fried_food', 'Meat', 'Noodles', 'Rice', 'Seafood', 'Soup', 'Veggies']
     print(classification_report(np.argmax(y_test, axis=1), y_pred, target_names=target_names))
     print(confusion_matrix(np.argmax(y_test, axis=1), y_pred))
 
@@ -201,7 +212,7 @@ def memory_managing():
     train_size = train_generator.n//train_generator.batch_size
     valid_size = valid_generator.n//valid_generator.batch_size
 
-    history = model.fit_generator(generator=train_generator, steps_per_epoch=train_size, validation_data=valid_generator, validation_steps=valid_size, epochs= 50)
+    history = model.fit_generator(generator=train_generator, steps_per_epoch=train_size, validation_data=valid_generator, validation_steps=valid_size, epochs=35)
 
     accuracy_loss_plots(history)
 
@@ -211,20 +222,21 @@ def memory_managing():
     print('test accuracy:', score[1])
 
     test_generator.reset()
-    pred = model.predict_generator(test_generator, steps=3, verbose=1)
 
-    predicted_class_indices = np.argmax(pred, axis=1)
+    Y_pred = model.predict_generator(test_generator, steps=3347, verbose=1)
+    y_pred = np.argmax(Y_pred, axis=1)
 
     labels = train_generator.class_indices
     labels = dict((v, k) for k, v in labels.items())
-    predictions = [labels[k] for k in predicted_class_indices]
+    predictions = [labels[k] for k in y_pred]
 
-    filenames=test_generator.filenames
-    #results=pd.DataFrame({"Filename": filenames, "Predictions": predictions})
-    #print(results)
-    #print(confusion_matrix(np.argmax(y_test, axis=1), y_pred))
-
-    #results.to_csv("results.csv", index=False)
+    print('Confusion Matrix')
+    confusion_m = confusion_matrix(test_generator.classes, y_pred)
+    print(confusion_m)
+    print('Classification Report')
+    target_names = ['Bread', 'Dairy_product', 'Dessert', 'Egg', 'Fried_food', 'Meat', 'Noodles', 'Rice', 'Seafood', 'Soup', 'Veggies']
+    print(classification_report(test_generator.classes, y_pred, target_names=target_names))
+    plot_confusion_matrix(confusion_m, target_names)
 
     print("finished")
 
@@ -240,8 +252,6 @@ def main():
     x_valid, y_valid = load_dataset('food11re/validation')
     x_test, y_test = load_dataset('food11re/evaluation')
 
-
-    print(x_train)
     print_sizes(x_train, x_valid, x_test)
 
     x_train, y_train = shuffle_data(x_train, y_train)
@@ -281,4 +291,4 @@ def main():
 
 
 if __name__ == "__main__":
-	memory_managing()
+    memory_managing()
