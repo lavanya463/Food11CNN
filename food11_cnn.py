@@ -185,9 +185,9 @@ from keras_preprocessing.image import ImageDataGenerator
 def memory_managing():
     print('Using Keras version', keras.__version__)
 
-    train_datagen = ImageDataGenerator(rescale=1./255)
-    valid_datagen = ImageDataGenerator(rescale=1./255)
-    test_datagen = ImageDataGenerator(rescale=1./255)
+    train_datagen = ImageDataGenerator(samplewise_center=True, samplewise_std_normalization=True, rescale=1./255)
+    valid_datagen = ImageDataGenerator(samplewise_center=True, samplewise_std_normalization=True,rescale=1./255)
+    test_datagen = ImageDataGenerator(samplewise_center=True, samplewise_std_normalization=True, rescale=1./255)
 
     train_generator = train_datagen.flow_from_directory(directory="food11re/training/", target_size=(200, 200), color_mode="rgb", batch_size=120, class_mode="categorical", shuffle=True, seed=25)
     valid_generator = valid_datagen.flow_from_directory(directory="food11re/validation/", target_size=(200, 200), color_mode="rgb", batch_size=120, class_mode="categorical", shuffle=True, seed=25)
@@ -281,4 +281,4 @@ def main():
 
 
 if __name__ == "__main__":
-    memory_managing()
+	memory_managing()
